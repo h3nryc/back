@@ -1,0 +1,8 @@
+
+
+
+db.insert([userData], function (err, newDocs) {
+                if(err){console.log(err)}
+                else{console.log(newDocs)}
+                socket.emit('regSuc');
+                });
