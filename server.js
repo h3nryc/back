@@ -11,6 +11,7 @@ var Datastore = require('nedb')
 postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
 
+
 /////////////
 // Routing //
 /////////////
@@ -93,12 +94,13 @@ io.on('connection', function (socket) {
             postsDB.find({ user: docs[i].follow }, function (err, docs) {
                 if(err){console.log(err)}
                 else{
-                  for (var i = 0; i < docs.length; i++) {
-                    var user = docs[i].user
-                    var text = docs[i].text
-                    var time = docs[i].time
-                    socket.emit('Order Posts', user, text, time)
-                  }
+                    for (var i = 0; i < docs.length; i++) {
+                      var user = docs[i].user
+                      var text = docs[i].text
+                      var time = docs[i].time
+                      var likes = docs[i].like
+                      socket.emit('Order Posts', user, text, time, likes)
+                    }
                 }
             });
           }
@@ -126,6 +128,17 @@ io.on('connection', function (socket) {
           socket.emit('Search Result', user)
         }
       }
+    });
+  })
+  socket.on('Like Post', function(user, time){
+      postsDB.find({user: user, time: time}, function(err, docs){
+        var clike = docs[0].like
+        var likeNum = clike+1
+      postsDB.update({ user: user, time: time }, { $set: { like: likeNum } }, function (err, numReplaced) {
+        if(err){console.log(err)}else{
+          console.log(numReplaced);
+        }
+      });
     });
   })
 });

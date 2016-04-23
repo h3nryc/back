@@ -25,12 +25,14 @@ function post() {
 }
 socket.emit('Get Feed Posts', Cookies.get('log'))
 
-socket.on('Order Posts', function(user,text ,time){
+socket.on('Order Posts', function(user,text ,time, likes){
   var post = {
     user: user
   , text: text
   , time: time
+  , likes: likes
   }
+  console.log(likes);
   postOrder.push(post)
 });
 
@@ -53,4 +55,8 @@ function order() {
 
 function displayPost(user,text,time) {
   $('.postbox').after('<div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> </div>');
+}
+
+function like() {
+  socket.emit("Like Post", "henry", 1461381579482)
 }
