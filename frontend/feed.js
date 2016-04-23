@@ -19,6 +19,7 @@ function post() {
       text: postText
       , user: user
       , time: time
+      , like: 0
     };
   socket.emit('Post', postData)
   $('.postinput').val('');
@@ -32,7 +33,6 @@ socket.on('Order Posts', function(user,text ,time, likes){
   , time: time
   , likes: likes
   }
-  console.log(likes);
   postOrder.push(post)
 });
 
@@ -48,15 +48,18 @@ function order() {
           }
           return 0;
         });
-        displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time);
+        displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time, postOrder[i].likes);
       }
     }, 300);
 }
 
-function displayPost(user,text,time) {
-  $('.postbox').after('<div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> </div>');
+function displayPost(user,text,time,likes) {
+  if (likes == 0) {
+    likes = "No"
+  }
+  $('.postbox').after(' <div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> <a  onclick="like('+"'"+user+"'"+','+time+')"class="like">'+likes+' Likes<img src="./like.png" alt="" /></a> </div>');
 }
 
-function like() {
-  socket.emit("Like Post", "henry", 1461381579482)
+function like(user, time) {
+  socket.emit("Like Post", user, time)
 }

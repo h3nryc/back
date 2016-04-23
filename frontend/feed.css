@@ -156,6 +156,20 @@ body {
     padding-right: 30px;
 }
 
+.textpost img{
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  position: relative;
+  top: 2px;
+}
+
+.like {
+  position: relative;
+  top: 50px;
+  margin-left: 20px;
+}
+
 #dropdownimg {
     height: 40px;
     width: 40px;

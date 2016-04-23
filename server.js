@@ -115,7 +115,8 @@ io.on('connection', function (socket) {
             var user = docs[i].user
             var text = docs[i].text
             var time = docs[i].time
-            socket.emit('Order Posts', user, text, time)
+            var likes = docs[i].like
+            socket.emit('Order Posts', user, text, time, likes)
           }
         }
     });
