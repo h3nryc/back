@@ -13,12 +13,13 @@ $( document ).ready(function() {
 
 socket.emit('Get Profile Posts', Cookies.get('cuser'))
 
-socket.on('Order Posts', function(user,text ,time, likes){
+socket.on('Order Posts', function(user,text ,time, likes, id){
   var post = {
     user: user
   , text: text
   , time: time
   , likes: likes
+  , id: id
   }
   postOrder.push(post)
 });
@@ -35,18 +36,18 @@ function order() {
           }
           return 0;
         });
-        displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time, postOrder[i].likes);
+        displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time, postOrder[i].likes, postOrder[i].id);
       }
     }, 300);
 }
 
-function displayPost(user,text,time,likes) {
+function displayPost(user,text,time,likes, id) {
   if (likes == 0) {
     likes = "No"
   }
-  $('.userposts').after(' <div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> <a onclick="like('+"'"+user+"'"+','+time+')"class="like">'+likes+' Likes<img src="../like.png" alt="" /></a> </div>');
+  $('.userposts').after(' <div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> <a onclick="like('+"'"+user+"'"+','+"'"+id+"'"+')"class="like">'+likes+' Likes<img src="../like.png" alt="" /></a> </div>');
 }
 
-function like(user, time) {
-  socket.emit("Like Post", user, time)
+function like(user, id) {
+  socket.emit("Like Post", user, id)
 }

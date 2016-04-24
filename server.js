@@ -99,7 +99,8 @@ io.on('connection', function (socket) {
                       var text = docs[i].text
                       var time = docs[i].time
                       var likes = docs[i].like
-                      socket.emit('Order Posts', user, text, time, likes)
+                      var id = docs[i]._id
+                      socket.emit('Order Posts', user, text, time, likes, id)
                     }
                 }
             });
@@ -116,7 +117,8 @@ io.on('connection', function (socket) {
             var text = docs[i].text
             var time = docs[i].time
             var likes = docs[i].like
-            socket.emit('Order Posts', user, text, time, likes)
+            var id = docs[i]._id
+            socket.emit('Order Posts', user, text, time, likes, id)
           }
         }
     });
@@ -131,11 +133,11 @@ io.on('connection', function (socket) {
       }
     });
   })
-  socket.on('Like Post', function(user, time){
-      postsDB.find({user: user, time: time}, function(err, docs){
+  socket.on('Like Post', function(user, id){
+      postsDB.find({user: user, _id: id}, function(err, docs){
         var clike = docs[0].like
         var likeNum = clike+1
-      postsDB.update({ user: user, time: time }, { $set: { like: likeNum } }, function (err, numReplaced) {
+      postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
         if(err){console.log(err)}else{
           console.log(numReplaced);
         }
