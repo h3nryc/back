@@ -47,10 +47,15 @@ function displayPost(user,text,time,likes, id) {
 }
 
 function like(user, id) {
-  var cuser = Cookies.get('log');
+  if(Cookies.get('log') === undefined){
+    window.open('/',height=300,width=300)
+  }else {
+    cuser = Cookies.get('log');
     socket.emit("Like Post", user, id, cuser)
+  }
 }
 
 socket.on('Like Added', function(){
+  console.log("hey");
   document.getElementById(""+id+"").innerHTML =  parseInt(document.getElementById(""+id+"").innerHTML) + 1
 })

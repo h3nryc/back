@@ -20,9 +20,10 @@ function post() {
       , user: user
       , time: time
       , like: 0
-    };
+    }; 
   socket.emit('Post', postData)
   $('.postinput').val('');
+
 }
 socket.emit('Get Feed Posts', Cookies.get('log'))
 

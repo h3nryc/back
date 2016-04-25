@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var server = app.listen(8080);
+var server = app.listen(3000);
 var io = require('socket.io').listen(server);
 var url = require("url");
 var cookieParser = require('cookie-parser');
@@ -150,7 +150,7 @@ io.on('connection', function (socket) {
               else{
                 postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
                   if(err){console.log(err)}
-                  socket.emit('Like Added')
+                  socket.emit('Like Added');
                 });
               }
           });
