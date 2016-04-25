@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var server = app.listen(3000);
+var server = app.listen(8080);
 var io = require('socket.io').listen(server);
 var url = require("url");
 var cookieParser = require('cookie-parser');
@@ -134,14 +134,15 @@ io.on('connection', function (socket) {
       }
     });
   })
-  socket.on('Like Post', function(user, id){
-      likeDB.find({user: user, id: id}, function(err, docs){
+  socket.on('Like Post', function(user, id, cuser){
+      likeDB.find({user: cuser, id: id}, function(err, docs){
         postsDB.find({user: user, _id: id}, function(err, docs){
           likeNum = docs[0].like + 1
         });
+        console.log(docs);
           if (docs.length === 0) {
             var LikeDATA = {
-              user: user,
+              user: cuser,
               id: id
             }
             likeDB.insert([LikeDATA], function (err, newDocs) {
@@ -153,6 +154,8 @@ io.on('connection', function (socket) {
                 });
               }
           });
+        }else {
+          console.log("pls");
         }
     });
   })

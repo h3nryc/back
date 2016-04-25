@@ -43,14 +43,12 @@ function order() {
 }
 
 function displayPost(user,text,time,likes, id) {
-  if (likes == 0) {
-    likes = "No"
-  }
   $('.userposts').after(' <div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> <a onclick="like('+"'"+user+"'"+','+"'"+id+"'"+')" class="like"><span id="'+id+'">'+likes+'</span> Likes<img src="../like.png" alt="" /></a> </div>');
 }
 
-function like(user, id, likes) {
-    socket.emit("Like Post", user, id)
+function like(user, id) {
+  var cuser = Cookies.get('log');
+    socket.emit("Like Post", user, id, cuser)
 }
 
 socket.on('Like Added', function(){
