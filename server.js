@@ -10,6 +10,7 @@ var Datastore = require('nedb')
 , db = new Datastore({ filename: './db/users.json', autoload: true });
 postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
+likeDB = new Datastore({ filename: './db/like.json', autoload: true });
 
 
 /////////////
@@ -134,14 +135,25 @@ io.on('connection', function (socket) {
     });
   })
   socket.on('Like Post', function(user, id){
-      postsDB.find({user: user, _id: id}, function(err, docs){
-        var clike = docs[0].like
-        var likeNum = clike+1
-      postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
-        if(err){console.log(err)}else{
-          console.log(numReplaced);
+      likeDB.find({user: user, id: id}, function(err, docs){
+        postsDB.find({user: user, _id: id}, function(err, docs){
+          likeNum = docs[0].like + 1
+        });
+          if (docs.length === 0) {
+            var LikeDATA = {
+              user: user,
+              id: id
+            }
+            likeDB.insert([LikeDATA], function (err, newDocs) {
+              if(err){console.log(err)}
+              else{
+                postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
+                  if(err){console.log(err)}
+                  socket.emit('Like Added')
+                });
+              }
+          });
         }
-      });
     });
   })
 });
