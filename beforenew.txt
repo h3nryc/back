@@ -1,0 +1,1 @@
+displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time, postOrder[i].likes, postOrder[i].id);

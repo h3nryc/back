@@ -88,24 +88,24 @@ io.on('connection', function (socket) {
         else{console.log(newDocs);}
     })
   });
+
     socket.on('Get Feed Posts', function(username){
       followDB.find({user: username}, function(err, docs){
         if(err){console.log(err)}else {
+          var requestedPosts = []
+          var posts = [];
           for (var i = 0; i < docs.length; i++) {
-            postsDB.find({ user: docs[i].follow }, function (err, docs) {
-                if(err){console.log(err)}
-                else{
-                    for (var i = 0; i < docs.length; i++) {
-                      var user = docs[i].user
-                      var text = docs[i].text
-                      var time = docs[i].time
-                      var likes = docs[i].like
-                      var id = docs[i]._id
-                      socket.emit('Order Posts', user, text, time, likes, id)
-                    }
-                }
-            });
-          }
+        	 	requestedPosts.push({user: docs[i].follow});
+        	 }
+           postsDB.find({$or: requestedPosts})
+        		.sort({time: -1})
+        		.exec(function(err, docs){
+        						if (err){
+        							console.log(err);
+        						} else {
+        							socket.emit('Send Post', docs)
+        				}
+						})
         }
       })
     });
@@ -150,7 +150,7 @@ io.on('connection', function (socket) {
               else{
                 postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
                   if(err){console.log(err)}
-                  socket.emit('Like Added');
+                  socket.emit('Like ');
                 });
               }
           });

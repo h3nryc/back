@@ -1,5 +1,4 @@
 check();
-order();
 var socket = io();
 var postOrder = []
 var getpost = 3;
@@ -20,40 +19,18 @@ function post() {
       , user: user
       , time: time
       , like: 0
-    }; 
+    };
   socket.emit('Post', postData)
   $('.postinput').val('');
 
 }
-socket.emit('Get Feed Posts', Cookies.get('log'))
 
-socket.on('Order Posts', function(user,text ,time, likes, id){
-  var post = {
-    user: user
-  , text: text
-  , time: time
-  , likes: likes
-  , id: id
+socket.on('Send Post', function(post){
+  for (var i = 0; i < post.length; i++) {
+    displayPost(post[i].user, post[i].text, post[i].time, post[i].like, post[i]._id)
   }
-  postOrder.push(post)
-});
+})
 
-function order() {
-    setTimeout(function () {
-      for (i = 0; i < postOrder.length; i++) {
-        postOrder.sort(function (a, b) {
-          if (a.time > b.time) {
-            return 1;
-          }
-          if (a.time < b.time) {
-            return -1;
-          }
-          return 0;
-        });
-        displayPost(postOrder[i].user, postOrder[i].text, postOrder[i].time, postOrder[i].likes, postOrder[i].id);
-      }
-    }, 300);
-}
 
 function displayPost(user,text,time,likes, id) {
   $('.postbox').after(' <div class="textpost"> <a href="/user/'+user+'"><h2>'+user+'</h2></a> <hr> <p id="textpostinner">'+text+'</p> <a onclick="like('+"'"+user+"'"+','+"'"+id+"'"+')" class="like"><span id="'+id+'">'+likes+'</span> Likes<img src="../like.png" alt="" /></a> </div>');
@@ -67,3 +44,4 @@ function like(user, id) {
 socket.on('Like Added', function(){
   document.getElementById(""+id+"").innerHTML =  parseInt(document.getElementById(""+id+"").innerHTML) + 1
 })
+socket.emit('Get Feed Posts', Cookies.get('log'))
