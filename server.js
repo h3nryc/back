@@ -85,6 +85,7 @@ io.on('connection', function (socket) {
     })
                           //End log in
     socket.on('Image Post', function(ext, buffer, location, postData) {
+      console.log(ext);
       postsDB.insert([postData], function (err, newDocs) {
         if(err){console.log(err)}
         else{
