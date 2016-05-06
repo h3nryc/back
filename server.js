@@ -4,7 +4,7 @@ var server = app.listen(3000);
 var io = require('socket.io').listen(server);
 var url = require("url");
 var cookieParser = require('cookie-parser');
-app.use(cookieParser());
+var fs = require('fs')
 //Databse Loading
 var Datastore = require('nedb')
 , db = new Datastore({ filename: './db/users.json', autoload: true });
@@ -18,7 +18,9 @@ likeDB = new Datastore({ filename: './db/like.json', autoload: true });
 /////////////
 
 app.use(express.static('frontend'));
+app.use(express.static('frontend/uploads'));
 app.use('/user', express.static(__dirname + '/public'))
+app.use('/uploads', express.static(__dirname + '/uploads'))
 
 //Allows user to go to /user/username to see that user.
 var user = function(req,res,next) {
@@ -82,12 +84,31 @@ io.on('connection', function (socket) {
       })
     })
                           //End log in
-    socket.on('Post', function(postData) {
+    socket.on('Image Post', function(ext, buffer, location, postData) {
       postsDB.insert([postData], function (err, newDocs) {
         if(err){console.log(err)}
-        else{console.log(newDocs);}
+        else{
+          console.log(newDocs);
+          var fileName = __dirname + '/frontend/uploads' + "/" + newDocs[0]._id + ext;
+          fs.open(fileName, 'a', 0755, function(err, fd) {
+            if (err) throw err;
+            fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+              fs.close(fd, function() {
+                console.log('File saved successful!');
+              });
+            });
+          });
+        }
     })
   });
+
+  socket.on('Post', function(postData){
+    postsDB.insert([postData], function (err, newDocs) {
+     if(err){console.log(err);}else{
+       console.log(newDocs);
+     }
+    })
+  })
 
     socket.on('Get Feed Posts', function(username){
       followDB.find({user: username}, function(err, docs){
@@ -159,4 +180,60 @@ io.on('connection', function (socket) {
         }
     });
   })
+  socket.on('Upload Profile Image', function (name, buffer, location) {
+    var fileName = __dirname + '/frontend/uploads' + "/" + name;
+    fs.stat(fileName, function(err, stat) {
+        if(err == null) {
+            fs.unlinkSync(fileName);
+            fs.open(fileName, 'a', 0755, function(err, fd) {
+              if (err) throw err;
+              fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+                fs.close(fd, function() {
+                  console.log('File saved successful!');
+                });
+              });
+            });
+        } else if(err.code == 'ENOENT') {
+          fs.open(fileName, 'a', 0755, function(err, fd) {
+            if (err) throw err;
+            fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+              fs.close(fd, function() {
+                console.log('File saved successful!');
+              });
+            });
+          });
+        } else {
+            console.log('Some other error: ', err.code);
+        }
+    });
+  });
+
+  socket.on('Upload Cover Image', function (name, buffer, location) {
+    var fileName = __dirname + '/frontend/uploads' + "/" + 'cover-' + name;
+    console.log(fileName);
+    fs.stat(fileName, function(err, stat) {
+        if(err == null) {
+            fs.unlinkSync(fileName);
+            fs.open(fileName, 'a', 0755, function(err, fd) {
+              if (err) throw err;
+              fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+                fs.close(fd, function() {
+                  console.log('File saved successful!');
+                });
+              });
+            });
+        } else if(err.code == 'ENOENT') {
+          fs.open(fileName, 'a', 0755, function(err, fd) {
+            if (err) throw err;
+            fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+              fs.close(fd, function() {
+                console.log('File saved successful!');
+              });
+            });
+          });
+        } else {
+            console.log('Some other error: ', err.code);
+        }
+    });
+  });
 });

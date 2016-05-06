@@ -1,7 +1,6 @@
 check();
 var socket = io();
 var postOrder = []
-var getpost = 3;
 
 function check() {
   if(Cookies.get('log') === undefined){
@@ -26,6 +25,7 @@ function post() {
 }
 
 socket.on('Send Post', function(post){
+  skip = skip+3
   for (var i = 0; i < post.length; i++) {
     displayPost(post[i].user, post[i].text, post[i].time, post[i].like, post[i]._id)
   }
@@ -44,4 +44,4 @@ function like(user, id) {
 socket.on('Like Added', function(){
   document.getElementById(""+id+"").innerHTML =  parseInt(document.getElementById(""+id+"").innerHTML) + 1
 })
-socket.emit('Get Feed Posts', Cookies.get('log'))
+socket.emit('Get Feed Posts', Cookies.get('log'),skip)
