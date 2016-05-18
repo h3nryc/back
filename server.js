@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var server = app.listen(3000);
+var server = app.listen(process.env.PORT);
 var io = require('socket.io').listen(server);
 var url = require("url");
 var cookieParser = require('cookie-parser');
@@ -11,6 +11,7 @@ var Datastore = require('nedb')
 postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
 likeDB = new Datastore({ filename: './db/like.json', autoload: true });
+notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
 
 
 /////////////
@@ -79,6 +80,7 @@ io.on('connection', function (socket) {
               socket.emit('logUnsuc');
           }else{
             var username = loguserData.username
+            console.log("suc");
            socket.emit('logSuc', username);
         }
       })
@@ -111,7 +113,7 @@ io.on('connection', function (socket) {
     })
   })
 
-    socket.on('Get Feed Posts', function(username){
+    socket.on('Get Feed Posts', function(username, skip){
       followDB.find({user: username}, function(err, docs){
         if(err){console.log(err)}else {
           var requestedPosts = []
@@ -120,6 +122,8 @@ io.on('connection', function (socket) {
         	 	requestedPosts.push({user: docs[i].follow});
         	 }
            postsDB.find({$or: requestedPosts})
+            .skip(skip)
+            .limit(12)
         		.sort({time: -1})
         		.exec(function(err, docs){
         						if (err){
@@ -131,20 +135,18 @@ io.on('connection', function (socket) {
         }
       })
     });
-  socket.on('Get Profile Posts', function(username){
-    postsDB.find({ user: username }, function (err, docs) {
-        if(err){console.log(err)}
-        else{
-          for (var i = 0; i < docs.length; i++) {
-            var user = docs[i].user
-            var text = docs[i].text
-            var time = docs[i].time
-            var likes = docs[i].like
-            var id = docs[i]._id
-            socket.emit('Order Posts', user, text, time, likes, id)
-          }
+  socket.on('Get Profile Posts', function(username,skip){
+    postsDB.find({ user: username })
+    .skip(skip)
+    .limit(4)
+    .sort({time: -1})
+    .exec(function(err, docs){
+            if (err){
+              console.log(err);
+            } else {
+              socket.emit('Send User Post', docs)
         }
-    });
+    })
   })
   socket.on('Search', function(query){
     db.find({username: query}, function(err, docs){
@@ -172,7 +174,21 @@ io.on('connection', function (socket) {
               else{
                 postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
                   if(err){console.log(err)}
-                  socket.emit('Like ');
+                    else{
+                      var time = Date.now();
+                      var likeData = {
+                        time: time,
+                        user: cuser,
+                        likedUser: user,
+                        reason: "has liked your post",
+                        post: id
+                      };
+                      notifDB.insert([likeData], function (err, newDocs) {
+                       if(err){console.log(err);}else{
+                         console.log(newDocs);
+                       }
+                    })
+                  }
                 });
               }
           });
@@ -181,8 +197,8 @@ io.on('connection', function (socket) {
         }
     });
   })
-  socket.on('Upload Profile Image', function (name, buffer, location) {
-    var fileName = __dirname + '/frontend/uploads' + "/" + name;
+  socket.on('Upload Profile Image', function (cuser, buffer, location) {
+    var fileName = __dirname + '/frontend/uploads' + "/" + cuser;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
             fs.unlinkSync(fileName);
@@ -209,8 +225,8 @@ io.on('connection', function (socket) {
     });
   });
 
-  socket.on('Upload Cover Image', function (name, buffer, location) {
-    var fileName = __dirname + '/frontend/uploads' + "/" + 'cover-' + name;
+  socket.on('Upload Cover Image', function (cuser, buffer, location) {
+    var fileName = __dirname + '/frontend/uploads' + "/" + 'cover-' + cuser;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
@@ -237,4 +253,67 @@ io.on('connection', function (socket) {
         }
     });
   });
+    socket.on('Get Notif', function (cuser,skip) {
+      notifDB.find({likedUser: cuser})
+       .skip(skip)
+       .limit(3)
+       .sort({time: -1})
+       .exec(function(err, docs){
+               if (err){
+                 console.log(err);
+               } else {
+                 socket.emit('Send Notif', docs)
+           }
+       })
+    });
+    socket.on('Check Follow', function (cuser,user) {
+      followDB.findOne({user: cuser, follow: user})
+       .exec(function(err, docs){
+               if (err){
+                 console.log(err);
+               } else {
+                 if (docs === null) {
+                    socket.emit('Follow Result', "no")
+                 }else {
+                  socket.emit('Follow Result', "yes")
+                 }
+           }
+       })
+    });
+    socket.on('Follow User', function(cuser,user){
+      followDB.insert({user: cuser, follow: user}, function (err, newDocs) {
+       if(err){console.log(err);}else{
+         var time = Date.now();
+         var likeData = {
+           time: time,
+           user: cuser,
+           likedUser: user,
+           reason: "started to follow you",
+         };
+           notifDB.insert([likeData], function (err, newDocs) {
+            if(err){console.log(err);}else{
+              console.log(newDocs);
+            }
+          })
+       }
+      })
+    })
+    socket.on('Unfollow User', function(cuser,user){
+      followDB.remove({user: cuser, follow: user}, {}, function (err, numRemoved) {
+       if(err){console.log(err);}else{
+         var time = Date.now();
+         var likeData = {
+           time: time,
+           user: cuser,
+           likedUser: user,
+           reason: "stopped following you",
+         };
+           notifDB.insert([likeData], function (err, newDocs) {
+            if(err){console.log(err);}else{
+              console.log(newDocs);
+            }
+          })
+       }
+      })
+    })
 });

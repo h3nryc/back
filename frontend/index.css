@@ -1,240 +1,322 @@
-*{
-    font-weight: 300;
+@charset "UTF-8";
+@import url("http://fonts.googleapis.com/css?family=Signika");
+@import url("http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css");
+@import url("http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css");
+html {
+  font-family: 'Signika', sans-serif;
 }
 
-body{
-  background-color: #ECEFF4;
-
+body {
+  background: #00C993;
 }
 
-h2{
-  margin: 0;
-}
-
-.nav{
-  height: 60px;
+#map {
+  position: absolute;
+  top: 0px;
+  bottom: 0;
   width: 100%;
-  background-color: white;
-  display: inline-block;
-  position: fixed;
-  z-index: 7;
+  height: 50000px;
+  background-image: url("./screen1.png");
 }
 
-.right{
+.notPlacemarked {
+  visibility: hidden;
+}
+
+.placemarked {
+  visibility: visible;
+  height: 55px;
+  width: 55px;
+  position: relative;
+  top: 110px;
+  margin-left: 40%;
+  z-index: 100;
+  transition: width 1s, height 1s, transform 1s;
+  -webkit-transition: width 1s, height 1s, -webkit-transform 1s;
+}
+
+.container {
+  background: #00C993;
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 2050px;
+  color: white;
+  text-align: center;
+  min-width: 24px;
+}
+
+.section {
+  position: absolute;
+  display: block;
+  width: 100%;
+  color: white;
+  text-align: left;
+}
+
+#sect1 {
+  top: 400px;
+}
+
+#sect2 {
+  top: 1000px;
+}
+
+#sect3 {
+  top: 1500px;
+}
+
+#footer {
+  top: 2050px;
+  height: 50px;
+  text-align: center;
+}
+
+#twitter {
+  float: left;
+  width: 20%;
+  font-size: 5em;
+  padding-left: 15%;
+}
+
+#rocket {
+  float: right;
+  width: 20%;
+  font-size: 5em;
+  padding-left: 15%;
+}
+
+#hiddenIcon {
+  text-align: center;
+  visibility: hidden;
+  height: 0;
+  font-size: 5em;
+}
+
+.anchor {
+  height: 100px;
+}
+
+band2 h2 {
+  text-align: left;
+}
+
+.explanation {
+  min-width: 12.42em;
+  float: left;
+  width: 40%;
+}
+
+.explanation-right {
+  min-width: 12.42em;
+  float: left;
+  text-align: right;
+  padding-left: 5%;
+  width: 40%;
+}
+
+#phone {
+  background: #DDD7D1;
+  border-radius: 30px;
+  box-shadow: 0 0.5em 0 #BCB1A5;
+  padding: 50px 18px 50px 18px;
+  width: 20%;
+  min-width: 390px;
+  max-width: 490px;
+  margin-right: 5%;
+  float: left;
+}
+
+#screen {
+  background: #ffffff;
+  height: 600px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  min-width: 200px;
+}
+
+#topBar {
+  background: #00C993;
+  height: 10%;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 10px;
+  position: relative;
+  min-width: 100px;
+}
+
+#mc_embed_signup {
+  text-align: right;
+  background-color: #00C993;
+}
+
+#mce-EMAIL {
+  text-align: right;
+  width: auto;
+  height: 30px;
+  margin-bottom: 20px;
+  padding-right: 1em;
+  border-style: none;
+  outline: none;
+}
+
+#mce-EMAIL:focus {
+  outline: none;
+}
+
+#mc-embedded-subscribe {
+  border-style: none;
+}
+
+.icon-bookmark {
   float: right;
 }
 
-.head{
-  background-image: url("head.jpeg");
-  height: 100vh;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+.icon-bookmark:hover {
+  color: #FFC52F;
 }
 
-.login{
-  margin-right: 20px;
-  z-index: 2;
-  position: relative;
-  bottom: 30px;
+.pressed {
+  color: #FFC52F;
 }
 
-button{
-  color: #FFFFFF !important;
-  border: none;
-  background-color: #2CC990;
-  border-radius: 12px;
-  width: 70px;
-  height: 30px;
-  font-size: 13pt;
-}
-
-button:hover{
-  background-color: white;
-  border: 1px solid #2CC990;
-  color: black !important;
-}
-
-#usernamelog{
-  margin-top: 10px;
-}
-
-#regbut{
-  width: 80px;
-  margin-left: 10px;
-}
-
-#logbut{
-  margin-left: 10px;
-}
-
-.logo h3 {
-  color: #2CC990;
-  font-size: 29pt;
-  font-weight: 300;
-  width: 60px;
-  margin: 0;
-  margin-left: 12px;
-  margin-top: 20px;
-}
-
-input{
-  border: none;
-  border-bottom: 1px solid #cccccc;
-  background-color: rgba(0, 0, 0, 0);
-}
-
-.speel{
-  margin: auto;
-  width: 40%;
+h1, h3 {
+  font-family: 'Signika', sans-serif;
+  font-weight: 700;
   text-align: center;
-  position: relative;
-  top: 100px;
-  font-size: 18pt;
-  color: #2CC990;
 }
 
-input:focus{
-    outline: none;
+.container h1 {
+  font-size: 5em;
+  line-height: 1em;
+  /*margin-bottom: 1em;*/
 }
 
-
-
-
-body {
-  font: 13px/20px 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #404040;
-  background: #596778;
+a {
+  color: white;
 }
 
-.sign-up {
-  position: relative;
-  margin: 50px auto;
-  width: 280px;
-  top: 12em;
-  padding: 33px 25px 29px;
-  background: white;
-  border-bottom: 1px solid #c4c4c4;
-  border-radius: 5px;
-  @include box-shadow(0 1px 5px rgba(black, .25));
-
-  &:before, &:after {
-    content: '';
-    position: absolute;
-    bottom: 1px;
-    left: 0;
-    right: 0;
-    height: 10px;
-    background: inherit;
-    border-bottom: 1px solid #d2d2d2;
-    border-radius: 4px;
-  }
-
-  &:after {
-    bottom: 3px;
-    border-color: #dcdcdc;
-  }
-}
-
-.sign-up-title {
-  margin: -25px -25px 25px;
-  padding: 15px 25px;
-  line-height: 35px;
-  font-size: 26px;
-  font-weight: 300;
-  color: #aaa;
+.button {
+  background: #DDD7D1;
   text-align: center;
-  text-shadow: 0 1px rgba(white, .75);
-  background: #f7f7f7;
-
-  &:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: #c4e17f;
-    border-radius: 5px 5px 0 0;
-    @include linear-gradient(left,
-                             #c4e17f, #c4e17f 12.5%,
-                             #f7fdca 12.5%, #f7fdca 25%,
-                             #fecf71 25%, #fecf71 37.5%,
-                             #f0776c 37.5%, #f0776c 50%,
-                             #db9dbe 50%, #db9dbe 62.5%,
-                             #c49cde 62.5%, #c49cde 75%,
-                             #669ae1 75%, #669ae1 87.5%,
-                             #62c2e4 87.5%, #62c2e4);
-  }
+  padding: .5em 1em;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 0.2em 0 #BCB1A5;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  /*transition cross-browser stuff*/
+  -webkit-transition: background 0.2s ease-out;
+  /* Safari 3.2+, Chrome */
+  -moz-transition: background 0.2s ease-out;
+  /* Firefox 4-15 */
+  -o-transition: background 0.2s ease-out;
+  /* Opera 10.5–12.00 */
+  transition: background 0.2s ease-out;
+  /* Firefox 16+, Opera 12.50+ */
 }
 
-input {
-  font-family: inherit;
-  color: inherit;
-  @include box-sizing(border-box);
+.button:hover {
+  background: #BCB1A5;
 }
 
-.sign-up-input {
-  width: 100%;
-  height: 50px;
-  margin-bottom: 25px;
-  padding: 0 15px 2px;
-  font-size: 17px;
-  background: white;
-  border: 2px solid #ebebeb;
-  border-radius: 4px;
-  @include box-shadow(inset 0 -2px #ebebeb);
-
-  &:focus {
-    border-color: #62c2e4;
-    outline: none;
-    @include box-shadow(inset 0 -2px #62c2e4);
-  }
-
-  .lt-ie9 & { line-height: 48px; }
-}
-
-.sign-up-button {
-  position: relative;
-  vertical-align: top;
-  width: 100%;
-  height: 54px;
-  padding: 0;
-  font-size: 22px;
+a.arrow {
   color: white;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(black, .25);
-  background: #2CC990;
-  border: 0;
-  border-bottom: 2px solid #1e8c64;
-  border-radius: 5px;
-  cursor: pointer;
-  @include box-shadow(inset 0 -2px #d76b60);
+  font-size: 3em;
+  text-decoration: none;
+  padding-bottom: 30px;
+  /*transition cross-browser stuff*/
+  -webkit-transition: color 0.2s ease-out;
+  /* Safari 3.2+, Chrome */
+  -moz-transition: color 0.2s ease-out;
+  /* Firefox 4-15 */
+  -o-transition: color 0.2s ease-out;
+  /* Opera 10.5–12.00 */
+  transition: color 0.2s ease-out;
+  /* Firefox 16+, Opera 12.50+ */
+}
 
-  &:active {
-    top: 1px;
-    outline: none;
-    @include box-shadow(none);
+a.arrow:hover {
+  color: #FFC52F;
+}
+
+@media only screen and (min-width: 767px) {
+  body {
+    font-size: 1.125em;
+    /* 18px / 16px */
+  }
+
+  .container {
+    background-size: 100%;
+  }
+
+  .container h1 {
+    font-size: 3.25em;
+    /*52 / 16*/
+  }
+
+  a.button {
+    padding: .75em 1.5em;
   }
 }
+@media only screen and (max-width: 550px) {
+  .explanation {
+    float: none;
+    margin: auto;
+    text-align: center;
+  }
 
-:-moz-placeholder { color: #ccc; font-weight: 300; }
-::-moz-placeholder { color: #ccc; opacity: 1; font-weight: 300; }
-::-webkit-input-placeholder { color: #ccc; font-weight: 300; }
-:-ms-input-placeholder { color: #ccc; font-weight: 300; }
+  .explanation-right {
+    float: none;
+    margin: auto;
+    text-align: center;
+  }
 
-::-moz-focus-inner { border: 0; padding: 0; }
-Live Demo
-HTML Source
-SCSS Source
-TweetShare
+  #sect1 {
+    top: 350px;
+  }
 
+  #phone {
+    visibility: hidden;
+    height: 0px;
+    width: 0px;
+    padding: 0;
+    margin: 0;
+  }
 
-.error{
-    display: none;
-}
+  #map {
+    width: 0px;
+    height: 0px;
+  }
 
-.error{
-  display: none;
+  #sect2 {
+    top: 900px;
+  }
+
+  #rocket {
+    visibility: hidden;
+  }
+
+  #twitter {
+    visibility: hidden;
+    padding-left: 0em;
+  }
+
+  #hiddenIcon {
+    visibility: visible;
+    height: auto;
+  }
+
+  #mce-EMAIL {
+    text-align: center;
+    padding: 0;
+    float: none;
+  }
+
+  #mc_embed_signup {
+    text-align: center;
+  }
 }
