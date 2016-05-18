@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
-var server = app.listen(process.env.PORT);
+app.set('port', process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 3000);
+app.set('ip', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 3000);
 var io = require('socket.io').listen(server);
 var url = require("url");
 var cookieParser = require('cookie-parser');
