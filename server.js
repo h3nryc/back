@@ -20,9 +20,9 @@ notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
 
 app.use(express.static('frontend'));
 app.use(express.static('frontend/uploads'));
-app.use('/user', express.static(__dirname + '/public'))
+app.use('/user', express.static(process.env.OPENSHIFT_DATA_DIR + '/public'))
 app.use('/uploads', express.static(process.env.OPENSHIFT_DATA_DIR+'/uploads'));
-app.use('/uploads', express.static(__dirname + '/uploads'))
+app.use('/uploads', express.static(process.env.OPENSHIFT_DATA_DIR + '/uploads'))
 
 //Allows user to go to /user/username to see that user.
 var user = function(req,res,next) {
@@ -33,7 +33,7 @@ var user = function(req,res,next) {
     if(docs === null){
          res.end('404 user not found');
     }else{
-        res.sendFile(__dirname + '/frontend/user.html');
+        res.sendFile(process.env.OPENSHIFT_DATA_DIR + '/frontend/user.html');
         res.cookie('cuser', req.params.uid, { httpOnly: false });
         }
     });
@@ -43,11 +43,11 @@ app.get('/user/:uid',user);
 
 //Routing for base pages like hompage login etc
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/frontend/index.html');
+  res.sendFile(process.env.OPENSHIFT_DATA_DIR + '/frontend/index.html');
 });
 
 app.get('/feed', function (req, res) {
-  res.sendFile(__dirname + '/frontend/feed.html');
+  res.sendFile(process.env.OPENSHIFT_DATA_DIR + '/frontend/feed.html');
 });
 
 //SETS UP SOCKET IO For Client -> Server
@@ -93,7 +93,7 @@ io.on('connection', function (socket) {
         if(err){console.log(err)}
         else{
           console.log(newDocs);
-          var fileName = __dirname + '/frontend/uploads' + "/" + newDocs[0]._id + ext;
+          var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + newDocs[0]._id + ext;
           fs.open(fileName, 'a', 0755, function(err, fd) {
             if (err) throw err;
             fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
@@ -199,7 +199,7 @@ io.on('connection', function (socket) {
     });
   })
   socket.on('Upload Profile Image', function (cuser, buffer, location) {
-    var fileName = __dirname + '/frontend/uploads' + "/" + cuser;
+    var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + cuser;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
             fs.unlinkSync(fileName);
@@ -227,7 +227,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('Upload Cover Image', function (cuser, buffer, location) {
-    var fileName = __dirname + '/frontend/uploads' + "/" + 'cover-' + cuser;
+    var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + 'cover-' + cuser;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
