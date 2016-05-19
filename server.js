@@ -21,6 +21,7 @@ notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
 app.use(express.static('frontend'));
 app.use(express.static('frontend/uploads'));
 app.use('/user', express.static(__dirname + '/public'))
+app.use('/uploads', express.static(process.env.OPENSHIFT_DATA_DIR+'/uploads'));
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
 //Allows user to go to /user/username to see that user.
