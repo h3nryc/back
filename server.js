@@ -12,8 +12,8 @@ postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
 likeDB = new Datastore({ filename: './db/like.json', autoload: true });
 notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
-
-
+console.log(process.env.OPENSHIFT_DATA_DIR+'/uploads');
+console.log(process.env.OPENSHIFT_DATA_DIR);
 /////////////
 // Routing //
 /////////////
@@ -21,9 +21,7 @@ notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
 app.use(express.static('frontend'));
 app.use(express.static('frontend/uploads'));
 app.use('/user', express.static(process.env.OPENSHIFT_DATA_DIR + '/public'))
-app.use('/uploads', express.static(process.env.OPENSHIFT_DATA_DIR+'/uploads'));
-app.use('/uploads', express.static(process.env.OPENSHIFT_DATA_DIR + '/uploads'))
-
+app.use('/uploads', express.static('./frontend/'+'/uploads'));
 //Allows user to go to /user/username to see that user.
 var user = function(req,res,next) {
     db.findOne({ username: req.params.uid }, function (err, docs) {
@@ -199,7 +197,7 @@ io.on('connection', function (socket) {
     });
   })
   socket.on('Upload Profile Image', function (cuser, buffer, location) {
-    var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + cuser;
+    var fileName = process.env.OPENSHIFT_DATA_DIR + 'uploads' + "/" + cuser;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
             fs.unlinkSync(fileName);
@@ -227,7 +225,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('Upload Cover Image', function (cuser, buffer, location) {
-    var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + 'cover-' + cuser;
+    var fileName = './frontend/uploads' + "/" + 'cover-' + cuser;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
