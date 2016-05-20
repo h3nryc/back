@@ -12,8 +12,6 @@ postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
 likeDB = new Datastore({ filename: './db/like.json', autoload: true });
 notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
-console.log(process.env.OPENSHIFT_DATA_DIR+'/uploads');
-console.log(process.env.OPENSHIFT_DATA_DIR);
 /////////////
 // Routing //
 /////////////
@@ -91,7 +89,7 @@ io.on('connection', function (socket) {
         if(err){console.log(err)}
         else{
           console.log(newDocs);
-          var fileName = process.env.OPENSHIFT_DATA_DIR + '/frontend/uploads' + "/" + newDocs[0]._id + ext;
+          var fileName = './frontend/uploads' + "/" + newDocs[0]._id + ext;
           fs.open(fileName, 'a', 0755, function(err, fd) {
             if (err) throw err;
             fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
@@ -197,7 +195,7 @@ io.on('connection', function (socket) {
     });
   })
   socket.on('Upload Profile Image', function (cuser, buffer, location) {
-    var fileName = process.env.OPENSHIFT_DATA_DIR + 'uploads' + "/" + cuser;
+    var fileName = './frontend/uploads' + "/" + cuser;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
             fs.unlinkSync(fileName);
