@@ -12,6 +12,7 @@ postsDB = new Datastore({ filename: './db/posts.json', autoload: true });
 followDB = new Datastore({ filename: './db/follow.json', autoload: true });
 likeDB = new Datastore({ filename: './db/like.json', autoload: true });
 notifDB = new Datastore({ filename: './db/notif.json', autoload: true });
+seshDB = new Datastore({ filename: './db/sesh.json', autoload: true });
 /////////////
 // Routing //
 /////////////
@@ -78,12 +79,29 @@ io.on('connection', function (socket) {
           }else{
             var username = loguserData.username
             console.log("suc");
-           socket.emit('logSuc', username);
+            var seshData = {
+              user: username
+            }
+            seshDB.insert([seshData], function (err, newDocs) {
+             if(err){console.log(err);}else{
+               username = newDocs[0]._id
+              socket.emit('logSuc', username);
+             }
+            })
         }
       })
     })
+    socket.on('Log Out', function(sesh){
+      console.log(sesh);
+      seshDB.remove({ _id: sesh }, {}, function (err, numRemoved) {
+        if (err) {console.log(err)}else {
+        }
+      });
+    })
                           //End log in
     socket.on('Image Post', function(ext, buffer, location, postData) {
+      seshDB.findOne({ _id: postData.user }, function (err, docs) {
+        postData.user = docs.user
       console.log(ext);
       postsDB.insert([postData], function (err, newDocs) {
         if(err){console.log(err)}
@@ -95,22 +113,31 @@ io.on('connection', function (socket) {
             fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
               fs.close(fd, function() {
                 console.log('File saved successful!');
+                socket.emit('Post Done')
               });
             });
           });
         }
     })
   });
+  });
 
   socket.on('Post', function(postData){
+    seshDB.findOne({ _id: postData.user }, function (err, docs) {
+      postData.user = docs.user
     postsDB.insert([postData], function (err, newDocs) {
      if(err){console.log(err);}else{
        console.log(newDocs);
+       socket.emit('Post Done')
      }
+    })
     })
   })
 
     socket.on('Get Feed Posts', function(username, skip){
+      seshDB.findOne({ _id: username }, function (err, docs) {
+        if (err) {console.log(err);}
+        var username = docs.user
       followDB.find({user: username}, function(err, docs){
         if(err){console.log(err)}else {
           var requestedPosts = []
@@ -131,6 +158,7 @@ io.on('connection', function (socket) {
 						})
         }
       })
+      });
     });
   socket.on('Get Profile Posts', function(username,skip){
     postsDB.find({ user: username })
@@ -156,6 +184,9 @@ io.on('connection', function (socket) {
     });
   })
   socket.on('Like Post', function(user, id, cuser){
+    seshDB.findOne({ _id: cuser }, function (err, docs) {
+      if (err) {console.log(err);}
+      var cuser = docs.user
       likeDB.find({user: cuser, id: id}, function(err, docs){
         postsDB.find({user: user, _id: id}, function(err, docs){
           likeNum = docs[0].like + 1
@@ -193,8 +224,12 @@ io.on('connection', function (socket) {
           console.log("pls");
         }
     });
+  });
   })
   socket.on('Upload Profile Image', function (cuser, buffer, location) {
+    seshDB.findOne({ _id: cuser }, function (err, docs) {
+      if (err) {console.log(err);}
+      var cuser = docs.user
     var fileName = './frontend/uploads' + "/" + cuser;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
@@ -221,8 +256,12 @@ io.on('connection', function (socket) {
         }
     });
   });
+  });
 
   socket.on('Upload Cover Image', function (cuser, buffer, location) {
+    seshDB.findOne({ _id: cuser }, function (err, docs) {
+      if (err) {console.log(err);}
+      var cuser = docs.user
     var fileName = './frontend/uploads' + "/" + 'cover-' + cuser;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
@@ -250,7 +289,11 @@ io.on('connection', function (socket) {
         }
     });
   });
+  });
     socket.on('Get Notif', function (cuser,skip) {
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+        if (err) {console.log(err);}
+        var cuser = docs.user
       notifDB.find({likedUser: cuser})
        .skip(skip)
        .limit(3)
@@ -262,8 +305,12 @@ io.on('connection', function (socket) {
                  socket.emit('Send Notif', docs)
            }
        })
+     });
     });
     socket.on('Check Follow', function (cuser,user) {
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+        if (err) {console.log(err);}
+        var cuser = docs.user
       followDB.findOne({user: cuser, follow: user})
        .exec(function(err, docs){
                if (err){
@@ -276,8 +323,12 @@ io.on('connection', function (socket) {
                  }
            }
        })
+     });
     });
     socket.on('Follow User', function(cuser,user){
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+        if (err) {console.log(err);}
+        var cuser = docs.user
       followDB.insert({user: cuser, follow: user}, function (err, newDocs) {
        if(err){console.log(err);}else{
          var time = Date.now();
@@ -294,8 +345,12 @@ io.on('connection', function (socket) {
           })
        }
       })
+    });
     })
     socket.on('Unfollow User', function(cuser,user){
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+        if (err) {console.log(err);}
+        var cuser = docs.user
       followDB.remove({user: cuser, follow: user}, {}, function (err, numRemoved) {
        if(err){console.log(err);}else{
          var time = Date.now();
@@ -312,5 +367,6 @@ io.on('connection', function (socket) {
           })
        }
       })
+    });
     })
 });
