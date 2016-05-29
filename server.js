@@ -226,11 +226,11 @@ io.on('connection', function (socket) {
     });
   });
   })
-  socket.on('Upload Profile Image', function (cuser, buffer, location) {
+  socket.on('Upload Profile Image', function (cuser,ext, buffer, location) {
     seshDB.findOne({ _id: cuser }, function (err, docs) {
       if (err) {console.log(err);}
       var cuser = docs.user
-    var fileName = './frontend/uploads' + "/" + cuser;
+    var fileName = './frontend/uploads' + "/" + cuser + ext;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
             fs.unlinkSync(fileName);
@@ -258,11 +258,11 @@ io.on('connection', function (socket) {
   });
   });
 
-  socket.on('Upload Cover Image', function (cuser, buffer, location) {
+  socket.on('Upload Cover Image', function (cuser, ext, buffer, location) {
     seshDB.findOne({ _id: cuser }, function (err, docs) {
       if (err) {console.log(err);}
       var cuser = docs.user
-    var fileName = './frontend/uploads' + "/" + 'cover-' + cuser;
+    var fileName = './frontend/uploads' + "/" + 'cover-' + cuser + ext;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
