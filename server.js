@@ -148,7 +148,7 @@ io.on('connection', function (socket) {
            postsDB.find({$or: requestedPosts})
             .skip(skip)
             .limit(12)
-        		.sort({time: -1})
+        		.sort({score: 1})
         		.exec(function(err, docs){
         						if (err){
         							console.log(err);
@@ -173,6 +173,23 @@ io.on('connection', function (socket) {
         }
     })
   })
+  socket.on('Get User Posts', function(username,skip){
+    seshDB.findOne({ _id: username }, function (err, docs) {
+      if (err) {console.log(err);}
+      var username = docs.user
+    postsDB.find({ user: username })
+    .skip(skip)
+    .limit(5)
+    .sort({time: -1})
+    .exec(function(err, docs){
+            if (err){
+              console.log(err);
+            } else {
+              socket.emit('Send Profile Post', docs)
+        }
+      })
+    });
+  })
   socket.on('Search', function(query){
     db.find({username: query}, function(err, docs){
       if(err){console.log(err)}else{
@@ -190,6 +207,9 @@ io.on('connection', function (socket) {
       likeDB.find({user: cuser, id: id}, function(err, docs){
         postsDB.find({user: user, _id: id}, function(err, docs){
           likeNum = docs[0].like + 1
+          time = docs[0].time
+          score = docs[0].score + 1
+          scoreFinal = (likeNum + 1) / Math.pow((time+2), 1.8)
         });
         console.log(docs);
           if (docs.length === 0) {
@@ -200,9 +220,10 @@ io.on('connection', function (socket) {
             likeDB.insert([LikeDATA], function (err, newDocs) {
               if(err){console.log(err)}
               else{
-                postsDB.update({ user: user, _id: id }, { $set: { like: likeNum } }, function (err, numReplaced) {
+                postsDB.update({ user: user, _id: id }, { $set: { like: likeNum , score: scoreFinal} }, function (err, numReplaced) {
                   if(err){console.log(err)}
                     else{
+                      console.log(numReplaced);
                       var time = Date.now();
                       var likeData = {
                         time: time,
@@ -296,7 +317,7 @@ io.on('connection', function (socket) {
         var cuser = docs.user
       notifDB.find({likedUser: cuser})
        .skip(skip)
-       .limit(3)
+       .limit(8)
        .sort({time: -1})
        .exec(function(err, docs){
                if (err){
@@ -368,5 +389,17 @@ io.on('connection', function (socket) {
        }
       })
     });
+    })
+    socket.on('Get Username', function(cuser){
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+        if(err){console.log(err)}else{
+          socket.emit('Return Username', docs.user)
+        }
+      })
+    })
+    socket.on('Get Like Count', function(id){
+      likeDB.count({ id: id }, function (err, count) {
+        socket.emit('Return Like Count', count, id)
+      });
     })
 });

@@ -20,6 +20,7 @@
     "nedb": "^1.8.0",
     "socket.io": "^1.4.5",
     "socket.io-stream": "^0.9.0",
-    "socketio-file-upload": "^0.4.6"
+    "socketio-file-upload": "^0.4.6",
+    "summarizely": "git://github.com/garbados/summarizely.git"
   }
 }
