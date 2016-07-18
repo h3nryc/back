@@ -63,7 +63,13 @@ io.on('connection', function (socket) {
                          db.insert([userData], function (err, newDocs) {
                         if(err){console.log(err)}
                         else{console.log(newDocs)}
-                        socket.emit('regSuc');
+
+                        //Follow themselves
+                        followDB.insert({user: userData.username, follow: userData.username}, function (err, newDocs) {
+                         if(err){console.log(err);}else{
+                           socket.emit('regSuc');
+                         }
+                        })
                       });
                     }
                   });
@@ -99,32 +105,40 @@ io.on('connection', function (socket) {
       });
     })
                           //End log in
-    socket.on('Image Post', function(ext, buffer, location, postData) {
-      seshDB.findOne({ _id: postData.user }, function (err, docs) {
+socket.on('Image Post', function(ext, buffer, location, postData) {
+  seshDB.findOne({ _id: postData.user }, function (err, docs) {
+      try{
         postData.user = docs.user
+      }catch(err){
+        return false;
+        }
       console.log(ext);
-      postsDB.insert([postData], function (err, newDocs) {
-        if(err){console.log(err)}
-        else{
-          console.log(newDocs);
-          var fileName = './frontend/uploads' + "/" + newDocs[0]._id + ext;
-          fs.open(fileName, 'a', 0755, function(err, fd) {
-            if (err) throw err;
-            fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
-              fs.close(fd, function() {
-                console.log('File saved successful!');
-                socket.emit('Post Done')
+    postsDB.insert([postData], function (err, newDocs) {
+      if(err){console.log(err)}
+          else{
+            console.log(newDocs);
+            var fileName = './frontend/uploads' + "/" + newDocs[0]._id + ext;
+            fs.open(fileName, 'a', 0755, function(err, fd) {
+              if (err) throw err;
+                fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+                  fs.close(fd, function() {
+                    console.log('File saved successful!');
+                      socket.emit('Post Done')
               });
             });
           });
         }
-    })
-  });
+      })
+    });
   });
 
   socket.on('Post', function(postData){
     seshDB.findOne({ _id: postData.user }, function (err, docs) {
-      postData.user = docs.user
+      try{
+          postData.user = docs.user
+      }catch(err){
+          return false;
+      }
     postsDB.insert([postData], function (err, newDocs) {
      if(err){console.log(err);}else{
        console.log(newDocs);
@@ -137,7 +151,11 @@ io.on('connection', function (socket) {
     socket.on('Get Feed Posts', function(username, skip){
       seshDB.findOne({ _id: username }, function (err, docs) {
         if (err) {console.log(err);}
-        var username = docs.user
+        try{
+            var username = docs.user
+        }catch(err){
+            return false;
+        }
       followDB.find({user: username}, function(err, docs){
         if(err){console.log(err)}else {
           var requestedPosts = []
@@ -176,7 +194,11 @@ io.on('connection', function (socket) {
   socket.on('Get User Posts', function(username,skip){
     seshDB.findOne({ _id: username }, function (err, docs) {
       if (err) {console.log(err);}
-      var username = docs.user
+      try{
+          var username = docs.user
+      }catch(err){
+          return false;
+      }
     postsDB.find({ user: username })
     .skip(skip)
     .limit(5)
@@ -195,7 +217,9 @@ io.on('connection', function (socket) {
       if(err){console.log(err)}else{
         for (var i = 0; i < docs.length; i++) {
           var user = docs[i].username
-          socket.emit('Search Result', user)
+          followDB.count({ follow: user }, function (err, count) {
+            socket.emit('Search Result', user, count)
+          });
         }
       }
     });
@@ -203,15 +227,18 @@ io.on('connection', function (socket) {
   socket.on('Like Post', function(user, id, cuser){
     seshDB.findOne({ _id: cuser }, function (err, docs) {
       if (err) {console.log(err);}
-      var cuser = docs.user
+      try{
+          var cuser = docs.user
+      }catch(err){
+          return false;
+      }
       likeDB.find({user: cuser, id: id}, function(err, docs){
         postsDB.find({user: user, _id: id}, function(err, docs){
           likeNum = docs[0].like + 1
           time = docs[0].time
           score = docs[0].score + 1
-          scoreFinal = (likeNum + 1) / Math.pow((time+2), 1.8)
+          scoreFinal = (likeNum + 1) / Math.pow((time+2), 1.5)
         });
-        console.log(docs);
           if (docs.length === 0) {
             var LikeDATA = {
               user: cuser,
@@ -223,7 +250,6 @@ io.on('connection', function (socket) {
                 postsDB.update({ user: user, _id: id }, { $set: { like: likeNum , score: scoreFinal} }, function (err, numReplaced) {
                   if(err){console.log(err)}
                     else{
-                      console.log(numReplaced);
                       var time = Date.now();
                       var likeData = {
                         time: time,
@@ -234,7 +260,6 @@ io.on('connection', function (socket) {
                       };
                       notifDB.insert([likeData], function (err, newDocs) {
                        if(err){console.log(err);}else{
-                         console.log(newDocs);
                        }
                     })
                   }
@@ -242,15 +267,34 @@ io.on('connection', function (socket) {
               }
           });
         }else {
-          console.log("pls");
+          postsDB.find({user: user, _id: id}, function(err, docs){
+            likeNum = docs[0].like -1
+            time = docs[0].time - 10000
+            scoreFinal = (likeNum) / Math.pow((time+2), 1.5)
+            likeDB.remove({ user: cuser, id: id }, {}, function (err, numRemoved) {
+              console.log("removed "+numRemoved);
+              if(err){console.log(err)}else{
+                postsDB.update({ user: user, _id: id }, { $set: { like: likeNum , score: scoreFinal} }, function (err, numReplaced) {
+                  if(err){console.log(err)}
+                    else{
+                      console.log("deleted "+numReplaced);
+                  }
+                });
+              }
+            });
+          });
         }
+      });
     });
-  });
   })
   socket.on('Upload Profile Image', function (cuser,ext, buffer, location) {
     seshDB.findOne({ _id: cuser }, function (err, docs) {
       if (err) {console.log(err);}
-      var cuser = docs.user
+      try{
+          var cuser = docs.user
+      }catch(err){
+          return false;
+      }
     var fileName = './frontend/uploads' + "/" + cuser + ext;
     fs.stat(fileName, function(err, stat) {
         if(err == null) {
@@ -282,7 +326,11 @@ io.on('connection', function (socket) {
   socket.on('Upload Cover Image', function (cuser, ext, buffer, location) {
     seshDB.findOne({ _id: cuser }, function (err, docs) {
       if (err) {console.log(err);}
-      var cuser = docs.user
+      try{
+          var cuser = docs.user
+      }catch(err){
+          return false;
+      }
     var fileName = './frontend/uploads' + "/" + 'cover-' + cuser + ext;
     console.log(fileName);
     fs.stat(fileName, function(err, stat) {
@@ -314,7 +362,11 @@ io.on('connection', function (socket) {
     socket.on('Get Notif', function (cuser,skip) {
       seshDB.findOne({ _id: cuser }, function (err, docs) {
         if (err) {console.log(err);}
-        var cuser = docs.user
+        try{
+            var cuser = docs.user
+        }catch(err){
+            return false;
+        }
       notifDB.find({likedUser: cuser})
        .skip(skip)
        .limit(8)
@@ -331,7 +383,11 @@ io.on('connection', function (socket) {
     socket.on('Check Follow', function (cuser,user) {
       seshDB.findOne({ _id: cuser }, function (err, docs) {
         if (err) {console.log(err);}
-        var cuser = docs.user
+        try{
+            var cuser = docs.user
+        }catch(err){
+            return false;
+        }
       followDB.findOne({user: cuser, follow: user})
        .exec(function(err, docs){
                if (err){
@@ -349,7 +405,11 @@ io.on('connection', function (socket) {
     socket.on('Follow User', function(cuser,user){
       seshDB.findOne({ _id: cuser }, function (err, docs) {
         if (err) {console.log(err);}
-        var cuser = docs.user
+        try{
+            var cuser = docs.user
+        }catch(err){
+            return false;
+        }
       followDB.insert({user: cuser, follow: user}, function (err, newDocs) {
        if(err){console.log(err);}else{
          var time = Date.now();
@@ -371,7 +431,11 @@ io.on('connection', function (socket) {
     socket.on('Unfollow User', function(cuser,user){
       seshDB.findOne({ _id: cuser }, function (err, docs) {
         if (err) {console.log(err);}
-        var cuser = docs.user
+        try{
+            var cuser = docs.user
+        }catch(err){
+            return false;
+        }
       followDB.remove({user: cuser, follow: user}, {}, function (err, numRemoved) {
        if(err){console.log(err);}else{
          var time = Date.now();
@@ -393,13 +457,21 @@ io.on('connection', function (socket) {
     socket.on('Get Username', function(cuser){
       seshDB.findOne({ _id: cuser }, function (err, docs) {
         if(err){console.log(err)}else{
-          socket.emit('Return Username', docs.user)
+          try{
+              var username = docs.user
+          }catch(err){
+              return false;
+          }
+          socket.emit('Return Username', username)
         }
       })
     })
-    socket.on('Get Like Count', function(id){
+    socket.on('Get Like Count', function(id,cuser){
+      seshDB.findOne({ _id: cuser }, function (err, docs) {
+      try{var cuser = docs.user}catch(err){return false;}
       likeDB.count({ id: id }, function (err, count) {
         socket.emit('Return Like Count', count, id)
       });
     })
+  });
 });
