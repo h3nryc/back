@@ -171,7 +171,17 @@ socket.on('Image Post', function(ext, buffer, location, postData) {
         						if (err){
         							console.log(err);
         						} else {
-        							socket.emit('Send Post', docs)
+                      var forCount = 0
+                      for (var z = 0; z < docs.length; z++) {
+                        var forCount = forCount + 1
+                          if (checkPost(docs[z].user,docs[z]._id,docs[z].time,docs[z].image,docs[z].ext) == false) {
+                            docs.splice(i,1);
+                          }
+                        if (forCount == docs.length) {
+                          console.log("sending to user");
+                          socket.emit('Send Post', docs)
+                        }
+                      }
         				}
 						})
         }
@@ -237,7 +247,12 @@ socket.on('Image Post', function(ext, buffer, location, postData) {
           likeNum = docs[0].like + 1
           time = docs[0].time
           score = docs[0].score + 1
-          scoreFinal = (likeNum + 1) / Math.pow((time+2), 1.5)
+          scoreFinal = 100000
+          if(Date.now() / 1000 - time / 1000 >= 86400){
+            removePost(docs[0].user, docs[0]._id)
+          }else{
+            scoreFinal = (likeNum + 1) / Math.pow((time+2), 1.5)
+          }
         });
           if (docs.length === 0) {
             var LikeDATA = {
@@ -272,12 +287,10 @@ socket.on('Image Post', function(ext, buffer, location, postData) {
             time = docs[0].time - 10000
             scoreFinal = (likeNum) / Math.pow((time+2), 1.5)
             likeDB.remove({ user: cuser, id: id }, {}, function (err, numRemoved) {
-              console.log("removed "+numRemoved);
               if(err){console.log(err)}else{
                 postsDB.update({ user: user, _id: id }, { $set: { like: likeNum , score: scoreFinal} }, function (err, numReplaced) {
                   if(err){console.log(err)}
                     else{
-                      console.log("deleted "+numReplaced);
                   }
                 });
               }
@@ -475,3 +488,29 @@ socket.on('Image Post', function(ext, buffer, location, postData) {
     })
   });
 });
+
+function removePost(user, id, image) {
+  var fileName = './frontend/uploads' + "/" + id + ext;
+  if (image == "yes") {
+    fs.unlinkSync(fileName);
+  }
+  postsDB.remove({ _id: id, user: user }, {}, function (err, numRemoved) {
+  if(err){console.log(err);}else{
+    console.log(numRemoved);
+  }
+});
+}
+
+function checkPost(user, id, time, image,ext){
+  console.log("checkpost Start");
+  console.log(user);
+  if (Date.now() / 1000 - time / 1000 >= 86400) {
+    removePost(user, id, image,ext)
+    console.log("wrong post");
+
+    return false;
+  }else{
+    console.log("right post");
+    return true;
+  }
+}
